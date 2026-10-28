@@ -1,0 +1,43 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+
+df = pd.read_excel('Beauty_Salon_Portfolio_Dataset.xlsx')
+df.columns = df.columns.str.strip()
+
+print("YOUR COLUMNS:", df.columns.tolist())
+
+# Auto-find the right columns
+# Find Service column
+service_col = [c for c in df.columns if 'Service' in c][0]
+print(f"Using Service column: {service_col}")
+
+# Find a price/revenue column - whatever you have
+# Look for Price, Amount, Total, Revenue, Cost
+possible = [c for c in df.columns if any(word in c.lower() for word in ['price','amount','total','revenue','cost'])]
+if len(possible) > 0:
+    price_col = possible[0]
+else:
+    price_col = df.columns[1]  # second column as fallback
+print(f"Using Money column: {price_col}")
+
+# Create dashboard
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+fig.suptitle('Beauty Salon Business Dashboard', fontsize=14, fontweight='bold')
+
+# Chart 1: Count
+df[service_col].value_counts().plot(kind='bar', color='#2196F3', ax=ax1)
+ax1.set_title('Bookings by Service')
+ax1.tick_params(axis='x', rotation=75)
+
+# Chart 2: Revenue
+df.groupby(service_col)[price_col].sum().sort_values(ascending=False).plot(kind='bar', color='#E91E63', ax=ax2)
+ax2.set_title(f'Revenue by Service ({price_col})')
+ax2.tick_params(axis='x', rotation=75)
+
+plt.tight_layout()
+save_path = os.path.join(os.getcwd(), 'salon_dashboard.png')
+plt.savefig(save_path, dpi=150)
+print(f"\nSAVED! Dashboard: {save_path}")
+print(f"Total: R{df[price_col].sum():.2f}")
+plt.show()
